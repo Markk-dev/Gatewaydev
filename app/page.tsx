@@ -1,45 +1,58 @@
 "use client"
 
-import { useState } from "react"
-import ChatLayout from "@/components/chat-layout"
-import ChatContainer from "@/components/chat-container"
-import ChatSidebar from "@/components/chat-sidebar"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { LoginForm } from "@/components/login-form"
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern"
+import { cn } from "@/lib/utils"
+import { getCurrentUser } from "@/lib/auth"
 
-export default function Home() {
-  const [messages, setMessages] = useState<Array<{ id: string; text: string; isBot: boolean; isThinking?: boolean }>>([])
-  const [isThinking, setIsThinking] = useState(false)
-  const [selectedModel, setSelectedModel] = useState("deepseek")
+export default function LoginPage() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleSendMessage = (text: string) => {
-    const userMessage = {
-      id: Date.now().toString(),
-      text,
-      isBot: false,
-    }
-    setMessages((prev) => [...prev, userMessage])
-    setIsThinking(true)
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage = {
-        id: (Date.now() + 1).toString(),
-        text: "This is a response from the chatbot. Your frontend is ready!",
-        isBot: true,
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await getCurrentUser()
+      if (user) {
+        // User is already logged in, redirect to chat
+        router.push('/chat')
+      } else {
+        setIsLoading(false)
       }
-      setMessages((prev) => [...prev, botMessage])
-      setIsThinking(false)
-    }, 2000)
+    }
+    checkAuth()
+  }, [router])
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    )
   }
 
   return (
-    <ChatLayout>
-      <ChatSidebar selectedModel={selectedModel} onModelChange={setSelectedModel} />
-      <ChatContainer
-        messages={messages}
-        isThinking={isThinking}
-        selectedModel={selectedModel}
-        onSendMessage={handleSendMessage}
-      />
-    </ChatLayout>
+    <div className="flex min-h-screen items-center justify-center bg-background p-6 relative overflow-hidden">
+      {/* Animated grid background */}
+      <div className="absolute inset-0">
+        <InteractiveGridPattern
+          width={30}
+          height={30}
+          squares={[40, 40]}
+          className={cn(
+            "[mask-image:radial-gradient(700px_circle_at_center,white,rgba(255,255,255,0.5),transparent)]",
+            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 border-none"
+          )}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-background/80 pointer-events-none" />
+      </div>
+      
+      {/* Login form */}
+      <div className="w-full max-w-sm relative z-10">
+        <LoginForm />
+      </div>
+    </div>
   )
 }

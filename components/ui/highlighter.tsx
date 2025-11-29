@@ -5,6 +5,7 @@ import type React from "react"
 import { useInView } from "motion/react"
 import { annotate } from "rough-notation"
 import { type RoughAnnotation } from "rough-notation/lib/model"
+import { useInteraction } from "@/lib/scroll-context"
 
 type AnnotationAction =
   | "highlight"
@@ -40,6 +41,7 @@ export function Highlighter({
 }: HighlighterProps) {
   const elementRef = useRef<HTMLSpanElement>(null)
   const annotationRef = useRef<RoughAnnotation | null>(null)
+  const { hideHighlights } = useInteraction()
 
   const isInView = useInView(elementRef, {
     once: true,
@@ -66,13 +68,20 @@ export function Highlighter({
     }
 
     const annotation = annotate(element, annotationConfig)
-
     annotationRef.current = annotation
-    annotationRef.current.show()
+
+    // Small delay to ensure element is positioned
+    requestAnimationFrame(() => {
+      if (!hideHighlights) {
+        annotation.show()
+      }
+    })
 
     const resizeObserver = new ResizeObserver(() => {
       annotation.hide()
-      annotation.show()
+      requestAnimationFrame(() => {
+        annotation.show()
+      })
     })
 
     resizeObserver.observe(element)
@@ -93,7 +102,37 @@ export function Highlighter({
     iterations,
     padding,
     multiline,
+    hideHighlights,
   ])
+
+  // Handle hide/show based on interaction
+  useEffect(() => {
+    if (!annotationRef.current) return
+
+    if (hideHighlights) {
+      // INSTANTLY remove
+      annotationRef.current.remove()
+      annotationRef.current = null
+    } else {
+      // Recreate after interaction stops
+      const element = elementRef.current
+      if (element) {
+        const newAnnotation = annotate(element, {
+          type: action,
+          color,
+          strokeWidth,
+          animationDuration,
+          iterations,
+          padding,
+          multiline,
+        })
+        annotationRef.current = newAnnotation
+        requestAnimationFrame(() => {
+          newAnnotation.show()
+        })
+      }
+    }
+  }, [hideHighlights, action, color, strokeWidth, animationDuration, iterations, padding, multiline])
 
   return (
     <span ref={elementRef} className="relative inline-block bg-transparent">

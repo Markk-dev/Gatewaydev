@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "appwrite": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-appwrite"
+      ],
+      "env": {
+        "APPWRITE_ENDPOINT": "https://syd.cloud.appwrite.io/v1",
+        "APPWRITE_PROJECT_ID": "692b46ca00092fe55fb2",
+        "APPWRITE_API_KEY": "standard_9af55292b346c06d32229ef6c3a7aca05315c0f101b6f0242d6cee7bff2d24e920652c3cc10f3601d1867ffe4f34d6c7bb00973ea3391d7c417c672dfedae828b17e971a181c6e1f5069d927a0a9d349f4c9f2bc4f3f3e31e39b4e8dab0ad6a08a94d2fc899028f91dcb6f02bbbc917e20bd1eda3a6d728c9b66e34ebf501981"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "tables_db_create_enum_column",
+        "tables_db_create_string_column"
+      ],
+      "disabledTools": []
+    }
+  }
+}

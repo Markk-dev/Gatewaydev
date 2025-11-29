@@ -15,15 +15,18 @@ interface ChatContainerProps {
   messages: Message[]
   isThinking: boolean
   selectedModel: string
-  onSendMessage: (text: string) => void
+  onSendMessage: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => void
 }
 
 export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage }: ChatContainerProps) {
   const [inputValue, setInputValue] = useState("")
 
-  const handleSubmit = (text: string) => {
-    if (text.trim()) {
-      onSendMessage(text)
+  const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => {
+    const userText = text.trim()
+    
+    // Send both separately - extracted text is for context only
+    if (userText || extractedText) {
+      onSendMessage(userText || "What does this document say?", extractedText, fileType, fileName)
       setInputValue("")
     }
   }

@@ -1,0 +1,213 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import ChatLayout from "@/components/chat-layout"
+import ChatContainer from "@/components/chat-container"
+import ChatSidebar from "@/components/chat-sidebar"
+import { sendChatMessage, type Message } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth"
+import { createConversation, addMessage, getConversationMessages } from "@/lib/conversations"
+
+const AVAILABLE_MODELS = [
+  "x-ai/grok-4.1-fast:free",
+  "openai/gpt-oss-20b:free",
+  "google/gemma-3n-e2b-it:free",
+  "qwen/qwen3-4b:free",
+  "mistralai/mistral-small-3.1-24b-instruct:free",
+  "tngtech/deepseek-r1t2-chimera:free",
+]
+
+const REQUEST_TIMEOUT = 30000 // 30 seconds
+
+export default function ChatPage() {
+  const router = useRouter()
+  const [messages, setMessages] = useState<Array<{ id: string; text: string; isBot: boolean; isThinking?: boolean; attachmentType?: 'image' | 'pdf'; fileName?: string }>>([])
+  const [isThinking, setIsThinking] = useState(false)
+  const [selectedModel, setSelectedModel] = useState("x-ai/grok-4.1-fast:free")
+  const [conversationHistory, setConversationHistory] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const user = await getCurrentUser()
+      if (!user) {
+        router.push('/')
+      } else {
+        setUserId(user.$id)
+        setIsLoading(false)
+      }
+    }
+    checkAuth()
+  }, [router])
+
+  const tryModelWithTimeout = async (model: string, history: Message[]): Promise<string> => {
+    return Promise.race([
+      sendChatMessage(model, history).then(response => response.choices[0].message.content),
+      new Promise<string>((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT)
+      )
+    ])
+  }
+
+  const getNextModel = (currentModel: string): string | null => {
+    const currentIndex = AVAILABLE_MODELS.indexOf(currentModel)
+    if (currentIndex === -1 || currentIndex === AVAILABLE_MODELS.length - 1) {
+      return null
+    }
+    return AVAILABLE_MODELS[currentIndex + 1]
+  }
+
+  const handleSendMessage = async (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => {
+    const userMessage = {
+      id: Date.now().toString(),
+      text,
+      isBot: false,
+      attachmentType: fileType,
+      fileName: fileName
+    }
+    setMessages((prev) => [...prev, userMessage])
+    setIsThinking(true)
+
+    // Create conversation if this is the first message
+    let convId = currentConversationId
+    if (!convId && userId) {
+      const result = await createConversation(userId, text)
+      if (result.success && result.conversation) {
+        convId = result.conversation.$id
+        setCurrentConversationId(convId)
+      }
+    }
+
+    // Save user message to database
+    if (convId) {
+      await addMessage(convId, 'user', text, undefined)
+    }
+
+    let contextMessage = text
+    if (extractedText) {
+      contextMessage = `${text}\n\n[Context from uploaded document]:\n${extractedText}`
+    }
+
+    const newHistory: Message[] = [...conversationHistory, { role: "user", content: contextMessage }]
+    setConversationHistory(newHistory)
+
+    let currentModel = selectedModel
+    let attempts = 0
+    const maxAttempts = AVAILABLE_MODELS.length
+    let hasShownWarning = false
+
+    while (attempts < maxAttempts) {
+      try {
+        const aiResponse = await tryModelWithTimeout(currentModel, newHistory)
+
+        const botMessage = {
+          id: (Date.now() + 1).toString(),
+          text: aiResponse,
+          isBot: true,
+        }
+        setMessages((prev) => [...prev, botMessage])
+        setConversationHistory([...newHistory, { role: "assistant", content: aiResponse }])
+        
+        // Save bot message to database
+        if (convId) {
+          await addMessage(convId, 'bot', aiResponse, undefined)
+        }
+        
+        setIsThinking(false)
+        return
+      } catch (error: any) {
+        attempts++
+        const nextModel = getNextModel(currentModel)
+        
+        if (!nextModel) {
+          const errorMessage = {
+            id: (Date.now() + 1).toString(),
+            text: "All models are currently unavailable. Please try again later or check if the Flask backend is running.",
+            isBot: true,
+          }
+          setMessages((prev) => [...prev, errorMessage])
+          setIsThinking(false)
+          return
+        }
+
+        if (!hasShownWarning) {
+          const isTimeout = error.message === 'timeout'
+          const warningMessage = {
+            id: `${Date.now()}-warning`,
+            text: isTimeout 
+              ? "The model was taking longer than expected to respond. Automatically switching to another model..."
+              : "The model encountered a problem. Automatically switching to another model...",
+            isBot: true,
+          }
+          setMessages((prev) => [...prev, warningMessage])
+          hasShownWarning = true
+        }
+        
+        currentModel = nextModel
+        setSelectedModel(nextModel)
+        
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+  }
+
+  const handleConversationSelect = async (conversationId: string) => {
+    setCurrentConversationId(conversationId)
+    const result = await getConversationMessages(conversationId)
+    
+    if (result.success && result.messages) {
+      // Convert database messages to UI messages
+      const uiMessages = result.messages.map(msg => ({
+        id: msg.$id,
+        text: msg.message,
+        isBot: msg.sender === 'bot',
+        attachmentType: msg.file_id ? 'image' as const : undefined,
+        fileName: undefined
+      }))
+      setMessages(uiMessages)
+      
+      // Rebuild conversation history for AI
+      const history: Message[] = result.messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.message
+      }))
+      setConversationHistory(history)
+    }
+  }
+
+  const handleNewChat = () => {
+    setCurrentConversationId(null)
+    setMessages([])
+    setConversationHistory([])
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    )
+  }
+
+  return (
+    <ChatLayout>
+      <ChatSidebar 
+        selectedModel={selectedModel} 
+        onModelChange={setSelectedModel}
+        currentConversationId={currentConversationId || undefined}
+        onConversationSelect={handleConversationSelect}
+        onNewChat={handleNewChat}
+      />
+      <ChatContainer
+        messages={messages}
+        isThinking={isThinking}
+        selectedModel={selectedModel}
+        onSendMessage={handleSendMessage}
+      />
+    </ChatLayout>
+  )
+}
