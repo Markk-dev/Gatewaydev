@@ -1,0 +1,192 @@
+@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200;300;400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+}
+
+:root {
+  /* Signature Colors */
+  --signature: #ccff00;
+  --signature-rgb: 204, 255, 0;
+
+  /* Main Colors */
+  --background: #fafafa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #ccff00;
+  --primary-foreground: #000000;
+  --secondary: #f0f0f0;
+  --secondary-foreground: #1a1a1a;
+  --muted: #e5e5e5;
+  --muted-foreground: #666666;
+  --accent: #ccff00;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e0e0e0;
+  --input: #ffffff;
+  --ring: #ccff00;
+  --chart-1: #f97316;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #ec4899;
+  --chart-5: #06b6d4;
+  --radius: 0.5rem;
+  --sidebar: #08080a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ccff00;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #ccff00;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #ccff00;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #ccff00;
+  --primary-foreground: #000000;
+  --secondary: #262626;
+  --secondary-foreground: #ffffff;
+  --muted: #404040;
+  --muted-foreground: #a0a0a0;
+  --accent: #ccff00;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #303030;
+  --input: #262626;
+  --ring: #ccff00;
+  --chart-1: #f97316;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #ec4899;
+  --chart-5: #06b6d4;
+  --sidebar: #08080a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ccff00;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #ccff00;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #ccff00;
+}
+
+* {
+  font-family: "Stack Sans Text", system-ui, sans-serif;
+}
+
+body {
+  font-family: "Stack Sans Text", system-ui, sans-serif;
+  background-color: #000000;
+  color: var(--foreground);
+}
+
+/* Simple three-dot thinking animation */
+@keyframes dot-bounce {
+
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  30% {
+    transform: translateY(-10px);
+    opacity: 0.7;
+  }
+}
+
+.thinking-dot {
+  animation: dot-bounce 1.4s ease-in-out infinite;
+}
+
+/* Ease-in animation for input */
+@keyframes ease-in-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ease-in-slide {
+  animation: ease-in-slide 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* New fade-out animation for empty state */
+@keyframes fade-out-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.fade-out-up {
+  animation: fade-out-up 0.4s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+}
+
+/* Animated gradient for Gateway text */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 6s ease infinite;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
