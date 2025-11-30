@@ -7,8 +7,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Gateway",
-  description: "Modern AI Chatbot Interface",
-  generator: "v0.app",
+  description: "AI assistance with path-finding and OCR",
 }
 
 export default function RootLayout({

@@ -9,24 +9,31 @@ interface Message {
   text: string
   isBot: boolean
   isThinking?: boolean
+  reasoning?: {
+    text: string
+    time: number
+    isComplete: boolean
+  }
 }
 
 interface ChatContainerProps {
   messages: Message[]
   isThinking: boolean
   selectedModel: string
-  onSendMessage: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => void
+  onSendMessage: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => void
+  isReasoningMode?: boolean
+  preloadedMessageIds?: Set<string>
 }
 
-export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage }: ChatContainerProps) {
+export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage, isReasoningMode = false, preloadedMessageIds }: ChatContainerProps) {
   const [inputValue, setInputValue] = useState("")
 
-  const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => {
+  const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => {
     const userText = text.trim()
     
     // Send both separately - extracted text is for context only
     if (userText || extractedText) {
-      onSendMessage(userText || "What does this document say?", extractedText, fileType, fileName)
+      onSendMessage(userText || "What does this document say?", extractedText, fileType, fileName, file)
       setInputValue("")
     }
   }
@@ -34,7 +41,13 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
   return (
     <div className="flex-1 flex flex-col bg-background rounded-tr-xl rounded-br-xl overflow-hidden my-6 mr-6 shadow-2xl px-12 pt-6">
       {/* Messages */}
-      <ChatMessages messages={messages} isThinking={isThinking} selectedModel={selectedModel} isTyping={inputValue.length > 0} />
+      <ChatMessages 
+        messages={messages} 
+        isThinking={isThinking} 
+        selectedModel={selectedModel} 
+        isReasoningMode={isReasoningMode}
+        preloadedMessageIds={preloadedMessageIds}
+      />
 
       {/* Input */}
       <ChatInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} isDisabled={isThinking} />

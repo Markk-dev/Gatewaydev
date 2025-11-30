@@ -8,30 +8,48 @@ import ChatSidebar from "@/components/chat-sidebar"
 import { sendChatMessage, type Message } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 import { createConversation, addMessage, getConversationMessages } from "@/lib/conversations"
+import { uploadFile } from "@/lib/file-storage"
 
 const AVAILABLE_MODELS = [
   "x-ai/grok-4.1-fast:free",
   "openai/gpt-oss-20b:free",
   "google/gemma-3n-e2b-it:free",
-  "qwen/qwen3-4b:free",
   "mistralai/mistral-small-3.1-24b-instruct:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
   "tngtech/deepseek-r1t2-chimera:free",
 ]
 
-const REQUEST_TIMEOUT = 30000 // 30 seconds
+const REQUEST_TIMEOUT = 30000
+
+interface ChatMessage {
+  id: string
+  text: string
+  isBot: boolean
+  isThinking?: boolean
+  attachmentType?: 'image' | 'pdf'
+  fileName?: string
+  reasoning?: {
+    text: string
+    time: number
+    isComplete: boolean
+  }
+}
 
 export default function ChatPage() {
   const router = useRouter()
-  const [messages, setMessages] = useState<Array<{ id: string; text: string; isBot: boolean; isThinking?: boolean; attachmentType?: 'image' | 'pdf'; fileName?: string }>>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isThinking, setIsThinking] = useState(false)
   const [selectedModel, setSelectedModel] = useState("x-ai/grok-4.1-fast:free")
   const [conversationHistory, setConversationHistory] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [refreshSidebar, setRefreshSidebar] = useState(0)
+  const [mode, setMode] = useState<"standard" | "reasoning">("standard")
+  const [preloadedMessageIds, setPreloadedMessageIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Check if user is authenticated
+ 
     const checkAuth = async () => {
       const user = await getCurrentUser()
       if (!user) {
@@ -44,13 +62,23 @@ export default function ChatPage() {
     checkAuth()
   }, [router])
 
-  const tryModelWithTimeout = async (model: string, history: Message[]): Promise<string> => {
+  const tryModelWithTimeout = async (model: string, history: Message[], isReasoning: boolean = false): Promise<string> => {
     return Promise.race([
-      sendChatMessage(model, history).then(response => response.choices[0].message.content),
+      sendChatMessage(model, history, isReasoning).then(response => response.choices[0].message.content),
       new Promise<string>((_, reject) => 
         setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT)
       )
     ])
+  }
+
+  const parseReasoningResponse = (content: string) => {
+    const reasoningMatch = content.match(/<reasoning>([\s\S]*?)<\/reasoning>/);
+    if (reasoningMatch) {
+      const reasoningText = reasoningMatch[1].trim();
+      const answer = content.replace(/<reasoning>[\s\S]*?<\/reasoning>/, '').trim();
+      return { reasoningText, answer };
+    }
+    return { reasoningText: null, answer: content };
   }
 
   const getNextModel = (currentModel: string): string | null => {
@@ -61,7 +89,7 @@ export default function ChatPage() {
     return AVAILABLE_MODELS[currentIndex + 1]
   }
 
-  const handleSendMessage = async (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => {
+  const handleSendMessage = async (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => {
     const userMessage = {
       id: Date.now().toString(),
       text,
@@ -72,19 +100,27 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage])
     setIsThinking(true)
 
-    // Create conversation if this is the first message
+
+    let fileId: string | undefined
+    if (file) {
+      const uploadResult = await uploadFile(file)
+      if (uploadResult.success) {
+        fileId = uploadResult.fileId
+      }
+    }
+
     let convId = currentConversationId
     if (!convId && userId) {
       const result = await createConversation(userId, text)
       if (result.success && result.conversation) {
         convId = result.conversation.$id
         setCurrentConversationId(convId)
+        setRefreshSidebar(prev => prev + 1)
       }
     }
 
-    // Save user message to database
     if (convId) {
-      await addMessage(convId, 'user', text, undefined)
+      await addMessage(convId, 'user', text, fileId)
     }
 
     let contextMessage = text
@@ -100,19 +136,60 @@ export default function ChatPage() {
     const maxAttempts = AVAILABLE_MODELS.length
     let hasShownWarning = false
 
+    const startTime = Date.now()
+    
+    // Add placeholder message for reasoning mode
+    let botMessageId: string | null = null
+    if (mode === "reasoning") {
+      botMessageId = (Date.now() + 1).toString()
+      setMessages((prev) => [...prev, {
+        id: botMessageId!,
+        text: "",
+        isBot: true,
+        reasoning: {
+          text: "",
+          time: 0,
+          isComplete: false
+        }
+      }])
+    }
+    
     while (attempts < maxAttempts) {
       try {
-        const aiResponse = await tryModelWithTimeout(currentModel, newHistory)
+        const aiResponse = await tryModelWithTimeout(currentModel, newHistory, mode === "reasoning")
+        
+        const endTime = Date.now()
+        const reasoningTime = Math.round((endTime - startTime) / 1000)
 
-        const botMessage = {
-          id: (Date.now() + 1).toString(),
+        let botMessage: any = {
+          id: botMessageId || (Date.now() + 1).toString(),
           text: aiResponse,
           isBot: true,
         }
-        setMessages((prev) => [...prev, botMessage])
+
+        if (mode === "reasoning") {
+          const { reasoningText, answer } = parseReasoningResponse(aiResponse)
+          botMessage = {
+            ...botMessage,
+            text: answer,
+            reasoning: reasoningText ? {
+              text: reasoningText,
+              time: reasoningTime,
+              isComplete: true
+            } : undefined
+          }
+          
+          // Update the existing message
+          setMessages((prev) => prev.map(msg => 
+            msg.id === botMessageId ? botMessage : msg
+          ))
+        } else {
+          setMessages((prev) => [...prev, botMessage])
+        }
+
         setConversationHistory([...newHistory, { role: "assistant", content: aiResponse }])
         
-        // Save bot message to database
+     
         if (convId) {
           await addMessage(convId, 'bot', aiResponse, undefined)
         }
@@ -160,17 +237,40 @@ export default function ChatPage() {
     const result = await getConversationMessages(conversationId)
     
     if (result.success && result.messages) {
-      // Convert database messages to UI messages
-      const uiMessages = result.messages.map(msg => ({
-        id: msg.$id,
-        text: msg.message,
-        isBot: msg.sender === 'bot',
-        attachmentType: msg.file_id ? 'image' as const : undefined,
-        fileName: undefined
-      }))
+    
+      const uiMessages = result.messages.map(msg => {
+        const baseMsg = {
+          id: msg.$id,
+          text: msg.message,
+          isBot: msg.sender === 'bot',
+          attachmentType: msg.file_id ? 'image' as const : undefined,
+          fileName: undefined
+        }
+        
+        // Parse reasoning from stored messages
+        if (msg.sender === 'bot') {
+          const { reasoningText, answer } = parseReasoningResponse(msg.message)
+          if (reasoningText) {
+            return {
+              ...baseMsg,
+              text: answer,
+              reasoning: {
+                text: reasoningText,
+                time: 0,
+                isComplete: true
+              }
+            }
+          }
+        }
+        
+        return baseMsg
+      })
       setMessages(uiMessages)
       
-      // Rebuild conversation history for AI
+      // Mark all loaded messages as completed (no typing animation)
+      const botMessageIds = uiMessages.filter(m => m.isBot).map(m => m.id)
+      setPreloadedMessageIds(new Set(botMessageIds))
+
       const history: Message[] = result.messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
         content: msg.message
@@ -183,6 +283,7 @@ export default function ChatPage() {
     setCurrentConversationId(null)
     setMessages([])
     setConversationHistory([])
+    setPreloadedMessageIds(new Set())
   }
 
   if (isLoading) {
@@ -201,12 +302,17 @@ export default function ChatPage() {
         currentConversationId={currentConversationId || undefined}
         onConversationSelect={handleConversationSelect}
         onNewChat={handleNewChat}
+        refreshTrigger={refreshSidebar}
+        mode={mode}
+        onModeChange={setMode}
       />
       <ChatContainer
         messages={messages}
         isThinking={isThinking}
         selectedModel={selectedModel}
         onSendMessage={handleSendMessage}
+        isReasoningMode={mode === "reasoning"}
+        preloadedMessageIds={preloadedMessageIds}
       />
     </ChatLayout>
   )

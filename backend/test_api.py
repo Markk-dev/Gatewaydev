@@ -1,7 +1,7 @@
 import requests
 import json
 
-# Test the Flask backend
+
 BASE_URL = 'http://localhost:5000/api'
 
 def test_health():

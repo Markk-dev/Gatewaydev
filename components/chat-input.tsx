@@ -10,7 +10,7 @@ import { useRef, useState } from "react"
 interface ChatInputProps {
   value: string
   onChange: (value: string) => void
-  onSubmit: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string) => void
+  onSubmit: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => void
   isDisabled: boolean
 }
 
@@ -40,7 +40,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
     e.preventDefault()
     if (!canSend()) return
 
-    onSubmit(value, uploadedFile?.extractedText || undefined, getFileType(), uploadedFile?.file.name)
+    onSubmit(value, uploadedFile?.extractedText || undefined, getFileType(), uploadedFile?.file.name, uploadedFile?.file)
     setUploadedFile(null)
   }
 
@@ -49,7 +49,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
       e.preventDefault()
       if (!canSend()) return
 
-      onSubmit(value, uploadedFile?.extractedText || undefined, getFileType(), uploadedFile?.file.name)
+      onSubmit(value, uploadedFile?.extractedText || undefined, getFileType(), uploadedFile?.file.name, uploadedFile?.file)
       setUploadedFile(null)
     }
   }
@@ -183,7 +183,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
             type="button"
             onClick={handleFileClick}
             disabled={isDisabled || uploadedFile !== null}
-            className="text-muted-foreground hover:text-foreground transition disabled:opacity-50"
+            className="text-muted-foreground hover:text-foreground transition disabled:opacity-50 cursor-pointer"
             aria-label="Attach image or PDF for OCR"
           >
             <Paperclip size={18} />
@@ -202,7 +202,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
           <button
             type="submit"
             disabled={isDisabled || !canSend()}
-            className="text-muted-foreground hover:text-foreground disabled:opacity-30 transition"
+            className="text-muted-foreground hover:text-foreground disabled:opacity-30 transition cursor-pointer"
             aria-label="Send message"
           >
             <Send size={18} />

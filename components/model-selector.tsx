@@ -21,7 +21,7 @@ export default function ModelSelector({ currentModel, models, onSelect, isOpen, 
     <div className="relative">
       <button
         onClick={() => onOpenChange(!isOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition cursor-pointer"
       >
         <img src={currentModel?.icon} alt={currentModel?.name} className="w-8 h-8 rounded-full flex-shrink-0" />
         <div className="flex-1 text-left min-w-0">
@@ -41,11 +41,10 @@ export default function ModelSelector({ currentModel, models, onSelect, isOpen, 
                 onSelect(model.id)
                 onOpenChange(false)
               }}
-              className={`w-full flex items-center px-4 py-2 text-left text-xs font-light transition ${
-                currentModel?.id === model.id
-                  ? "bg-[#86ee02]/20 text-[#86ee02]"
-                  : "text-sidebar-foreground hover:bg-white/5"
-              }`}
+              className={`w-full flex items-center px-4 py-2 text-left text-xs font-light transition cursor-pointer ${currentModel?.id === model.id
+                ? "bg-[#86ee02]/20 text-[#86ee02]"
+                : "text-sidebar-foreground hover:bg-white/5"
+                }`}
             >
               {model.name}
             </button>

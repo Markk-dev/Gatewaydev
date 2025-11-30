@@ -16,7 +16,7 @@ export function InteractionProvider({ children }: { children: React.ReactNode })
   const triggerInteraction = () => {
     // INSTANTLY hide all highlights
     setHideHighlights(true)
-    
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }

@@ -15,7 +15,7 @@ export default function LoginPage() {
     const checkAuth = async () => {
       const user = await getCurrentUser()
       if (user) {
-        // User is already logged in, redirect to chat
+
         router.push('/chat')
       } else {
         setIsLoading(false)
@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6 relative overflow-hidden">
-      {/* Animated grid background */}
+
       <div className="absolute inset-0">
         <InteractiveGridPattern
           width={30}
@@ -45,11 +45,11 @@ export default function LoginPage() {
             "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 border-none"
           )}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-background/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background/60 pointer-events-none" />
       </div>
       
-      {/* Login form */}
+
       <div className="w-full max-w-sm relative z-10">
         <LoginForm />
       </div>

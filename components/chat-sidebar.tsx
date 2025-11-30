@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { MessageSquare, Trash2 } from "lucide-react"
 import ModelSelector from "./model-selector"
+import ModeSwitcher from "./mode-switcher"
 import { MODELS } from "@/lib/models"
 import { getUserConversations, deleteConversation, type Conversation } from "@/lib/conversations"
 import { getCurrentUser } from "@/lib/auth"
+import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar"
 
 interface ChatSidebarProps {
   selectedModel: string
@@ -13,23 +15,31 @@ interface ChatSidebarProps {
   currentConversationId?: string
   onConversationSelect: (conversationId: string) => void
   onNewChat: () => void
+  refreshTrigger?: number
+  mode: "standard" | "reasoning"
+  onModeChange: (mode: "standard" | "reasoning") => void
 }
 
-export default function ChatSidebar({ 
-  selectedModel, 
-  onModelChange, 
+export default function ChatSidebar({
+  selectedModel,
+  onModelChange,
   currentConversationId,
   onConversationSelect,
-  onNewChat
+  onNewChat,
+  refreshTrigger,
+  mode,
+  onModeChange
 }: ChatSidebarProps) {
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteProgress, setDeleteProgress] = useState(0)
   const currentModel = MODELS.find((m) => m.id === selectedModel)
 
   useEffect(() => {
     loadConversations()
-  }, [])
+  }, [refreshTrigger])
 
   const loadConversations = async () => {
     const user = await getCurrentUser()
@@ -44,13 +54,34 @@ export default function ChatSidebar({
 
   const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+    setDeletingId(conversationId)
+    setDeleteProgress(0)
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setDeleteProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval)
+          return 90
+        }
+        return prev + 10
+      })
+    }, 100)
+
     const result = await deleteConversation(conversationId)
-    if (result.success) {
-      setConversations(conversations.filter(c => c.$id !== conversationId))
-      if (currentConversationId === conversationId) {
-        onNewChat()
+    clearInterval(progressInterval)
+    setDeleteProgress(100)
+
+    setTimeout(() => {
+      if (result.success) {
+        setConversations(conversations.filter(c => c.$id !== conversationId))
+        if (currentConversationId === conversationId) {
+          onNewChat()
+        }
       }
-    }
+      setDeletingId(null)
+      setDeleteProgress(0)
+    }, 300)
   }
 
   return (
@@ -65,13 +96,18 @@ export default function ChatSidebar({
         </div>
 
         {/* New Chat Button */}
-        <button 
+        <button
           onClick={onNewChat}
-          className="w-full bg-[#86ee02] hover:bg-[#86ee02]/90 text-black font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm"
+          className="w-full bg-[#86ee02] hover:bg-[#86ee02]/90 text-black font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm cursor-pointer"
         >
           <MessageSquare size={18} />
           New Chat
         </button>
+
+        {/* Mode Switcher */}
+        <div className="mt-4">
+          <ModeSwitcher mode={mode} onModeChange={onModeChange} />
+        </div>
       </div>
 
       {/* Recent Chats */}
@@ -84,23 +120,34 @@ export default function ChatSidebar({
             <div className="text-center text-gray-500 text-sm py-4">No conversations yet</div>
           ) : (
             conversations.map((chat) => (
-              <button
+              <div
                 key={chat.$id}
+                className={`w-full text-left px-4 py-2.5 rounded-lg transition text-sm font-extralight flex items-center justify-between group cursor-pointer ${currentConversationId === chat.$id
+                  ? 'bg-[#03301d] text-white'
+                  : 'text-gray-300 hover:bg-white/10'
+                  }`}
                 onClick={() => onConversationSelect(chat.$id)}
-                className={`w-full text-left px-4 py-2.5 rounded-lg transition text-sm font-extralight flex items-center justify-between group ${
-                  currentConversationId === chat.$id 
-                    ? 'bg-white/20 text-white' 
-                    : 'text-gray-300 hover:bg-white/10'
-                }`}
               >
                 <span className="truncate">{chat.title}</span>
                 <button
                   onClick={(e) => handleDeleteConversation(chat.$id, e)}
-                  className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-400"
+                  className={`transition text-gray-400 hover:text-red-400 flex-shrink-0 ${deletingId === chat.$id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
                 >
-                  <Trash2 size={16} />
+                  {deletingId === chat.$id ? (
+                    <AnimatedCircularProgressBar
+                      max={100}
+                      min={0}
+                      value={deleteProgress}
+                      gaugePrimaryColor="#87ed02"
+                      gaugeSecondaryColor="rgba(135, 237, 2, 0.2)"
+                      className="w-4 h-4"
+                    />
+                  ) : (
+                    <Trash2 size={16} />
+                  )}
                 </button>
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -121,7 +168,7 @@ export default function ChatSidebar({
             await logout()
             window.location.href = "/"
           }}
-          className="w-full text-sm text-gray-400 hover:text-white transition py-2"
+          className="w-full text-sm text-gray-400 hover:text-white transition py-2 cursor-pointer"
         >
           Logout
         </button>

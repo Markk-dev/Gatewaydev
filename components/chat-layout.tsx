@@ -1,4 +1,7 @@
+"use client"
+
 import type React from "react"
+import { InteractionProvider } from "@/lib/scroll-context"
 
 interface ChatLayoutProps {
   children: React.ReactNode
@@ -6,8 +9,10 @@ interface ChatLayoutProps {
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
   return (
-    <div className="flex h-screen bg-black overflow-hidden">
-      {children}
-    </div>
+    <InteractionProvider>
+      <div className="flex h-screen bg-black overflow-hidden">
+        {children}
+      </div>
+    </InteractionProvider>
   )
 }

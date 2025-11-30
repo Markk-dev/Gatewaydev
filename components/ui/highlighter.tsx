@@ -41,7 +41,15 @@ export function Highlighter({
 }: HighlighterProps) {
   const elementRef = useRef<HTMLSpanElement>(null)
   const annotationRef = useRef<RoughAnnotation | null>(null)
-  const { hideHighlights } = useInteraction()
+
+  // Try to get interaction context, but don't fail if not available
+  let hideHighlights = false
+  try {
+    const context = useInteraction()
+    hideHighlights = context.hideHighlights
+  } catch {
+    // Not in InteractionProvider, that's fine - highlights will always show
+  }
 
   const isInView = useInView(elementRef, {
     once: true,

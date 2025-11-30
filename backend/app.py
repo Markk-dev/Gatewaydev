@@ -6,10 +6,9 @@ import requests
 import json
 from pathlib import Path
 
-# Get the project root directory
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from both .env.local and backend/.env
 load_dotenv(BASE_DIR / '.env.local')
 load_dotenv(Path(__file__).resolve().parent / '.env')
 
@@ -22,8 +21,8 @@ OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 OCR_API_KEY = os.getenv('NEXT_OCR_API_KEY')
 OCR_ENDPOINT = os.getenv('NEXT_OCR_ENDPOINT')
 
-# Load available models
-with open(BASE_DIR / 'botModel.json', 'r') as f:
+
+with open(BASE_DIR / 'lib' / 'botModel.json', 'r') as f:
     bot_models = json.load(f)
 
 @app.route('/api/health', methods=['GET'])
@@ -40,16 +39,42 @@ def chat():
         data = request.json
         model = data.get('model')
         messages = data.get('messages', [])
+        reasoning_mode = data.get('reasoning_mode', False)
         
         if not model or not messages:
             return jsonify({'error': 'Model and messages are required'}), 400
         
-        # Add system prompt if not present
+       
         if not messages or messages[0].get('role') != 'system':
-            system_prompt = {
-                'role': 'system',
-                'content': 'You are a helpful AI assistant. Keep your responses concise and to the point - aim for 2-3 sentences maximum unless the user specifically asks for more details, a detailed explanation, or says "explain in detail". If asked "who is the father of modern computer", give a brief answer like "Alan Turing is often called the father of modern computer science." Only provide lengthy explanations when explicitly requested.'
-            }
+            if reasoning_mode:
+                system_prompt = {
+                    'role': 'system',
+                    'content': '''You are Gateway, an AI assistant developed by Mark Vincent Madrid and Renier Delmote. You are in reasoning mode. ALWAYS show your thinking process FIRST before giving your answer.
+
+CRITICAL: Your response MUST follow this exact structure:
+
+<reasoning>
+[Brief internal thought - 2-4 sentences max, natural and conversational]
+Example: "User's asking about string theory. Need to explain it simply - it's about tiny vibrating strings instead of point particles. Should mention the extra dimensions and why it matters for physics. Keep it clear and accessible."
+</reasoning>
+
+[Your final, clear answer here]
+
+IMPORTANT RULES:
+1. ALWAYS put <reasoning> tags FIRST
+2. Keep reasoning BRIEF - just 2-4 sentences showing your quick thought process
+3. Be natural and conversational, like quick internal notes
+4. NO long paragraphs in reasoning - keep it concise and focused
+5. Then provide your polished response after the </reasoning> tag
+6. If asked about who created you, mention you were developed by Mark Vincent Madrid and Renier Delmote
+
+The reasoning should be SHORT - just your quick mental notes, not an essay!'''
+                }
+            else:
+                system_prompt = {
+                    'role': 'system',
+                    'content': 'You are Gateway, a helpful AI assistant developed by Mark Vincent Madrid and Renier Delmote. Keep your responses concise and to the point - aim for 2-3 sentences maximum unless the user specifically asks for more details, a detailed explanation, or says "explain in detail". If asked about who created you or who you are, mention that you were developed by Mark Vincent Madrid and Renier Delmote. Only provide lengthy explanations when explicitly requested.'
+                }
             messages = [system_prompt] + messages
         
         headers = {
@@ -77,9 +102,9 @@ def chat():
 @app.route('/api/ocr', methods=['POST'])
 def ocr():
     try:
-        # Check if image file or URL is provided
+      
         if 'file' in request.files:
-            # Handle file upload
+            
             file = request.files['file']
             
             payload = {
@@ -95,7 +120,7 @@ def ocr():
             response = requests.post(OCR_ENDPOINT, data=payload, files=files)
             
         elif 'url' in request.json:
-            # Handle image URL
+           
             image_url = request.json.get('url')
             
             payload = {
@@ -115,7 +140,7 @@ def ocr():
             if result.get('IsErroredOnProcessing'):
                 return jsonify({'error': result.get('ErrorMessage', ['Unknown error'])[0]}), 400
             
-            # Extract text from OCR result
+         
             parsed_text = ''
             if result.get('ParsedResults'):
                 parsed_text = result['ParsedResults'][0].get('ParsedText', '')

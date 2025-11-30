@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, memo } from "react"
 import { cn } from "@/lib/utils"
 
 interface ProgressiveTypingProps {
@@ -11,7 +11,7 @@ interface ProgressiveTypingProps {
   renderSegment: (text: string, isComplete: boolean) => React.ReactNode
 }
 
-export function ProgressiveTyping({
+export const ProgressiveTyping = memo(function ProgressiveTyping({
   text,
   duration = 20,
   className,
@@ -50,4 +50,4 @@ export function ProgressiveTyping({
       )}
     </span>
   )
-}
+})

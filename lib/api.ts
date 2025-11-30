@@ -21,7 +21,7 @@ export interface ChatResponse {
   };
 }
 
-export async function sendChatMessage(model: string, messages: Message[]): Promise<ChatResponse> {
+export async function sendChatMessage(model: string, messages: Message[], reasoningMode: boolean = false): Promise<ChatResponse> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
@@ -31,7 +31,7 @@ export async function sendChatMessage(model: string, messages: Message[]): Promi
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ model, messages }),
+      body: JSON.stringify({ model, messages, reasoning_mode: reasoningMode }),
       signal: controller.signal,
     });
 

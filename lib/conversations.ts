@@ -17,13 +17,20 @@ export interface Message {
   created_at: string;
 }
 
-// Create a new conversation
+
 export async function createConversation(userId: string, firstMessage: string) {
   try {
-    // Generate a title from the first message (first 50 chars)
-    const title = firstMessage.length > 50 
-      ? firstMessage.substring(0, 50) + '...' 
-      : firstMessage;
+    
+    let title = firstMessage.trim();
+    if (title.length > 30) {
+      title = title.substring(0, 30);
+     
+      const lastSpace = title.lastIndexOf(' ');
+      if (lastSpace > 20) {
+        title = title.substring(0, lastSpace);
+      }
+      title += '...';
+    }
 
     const conversation = await databases.createDocument(
       DATABASE_ID,
@@ -43,7 +50,7 @@ export async function createConversation(userId: string, firstMessage: string) {
   }
 }
 
-// Get all conversations for a user
+
 export async function getUserConversations(userId: string) {
   try {
     const response = await databases.listDocuments(
@@ -63,7 +70,7 @@ export async function getUserConversations(userId: string) {
   }
 }
 
-// Add a message to a conversation
+
 export async function addMessage(
   conversationId: string,
   sender: 'user' | 'bot',
@@ -91,7 +98,7 @@ export async function addMessage(
   }
 }
 
-// Get all messages for a conversation
+
 export async function getConversationMessages(conversationId: string) {
   try {
     const response = await databases.listDocuments(
@@ -111,20 +118,20 @@ export async function getConversationMessages(conversationId: string) {
   }
 }
 
-// Delete a conversation and its messages
+
 export async function deleteConversation(conversationId: string) {
   try {
-    // First, get all messages for this conversation
+   
     const messagesResult = await getConversationMessages(conversationId);
     
-    // Delete all messages
+
     if (messagesResult.success && messagesResult.messages) {
       for (const message of messagesResult.messages) {
         await databases.deleteDocument(DATABASE_ID, MESSAGES_TABLE_ID, message.$id);
       }
     }
 
-    // Delete the conversation
+
     await databases.deleteDocument(DATABASE_ID, CONVERSATIONS_TABLE_ID, conversationId);
 
     return { success: true };

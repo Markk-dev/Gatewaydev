@@ -25,12 +25,6 @@ export const MODELS: ModelInfo[] = [
     provider: "Google"
   },
   { 
-    id: "qwen/qwen3-4b:free", 
-    name: "Qwen3 4B", 
-    icon: "/models/Qwen.png",
-    provider: "Alibaba"
-  },
-  { 
     id: "mistralai/mistral-small-3.1-24b-instruct:free", 
     name: "Mistral Small", 
     icon: "/models/Mistral.png",
@@ -41,6 +35,12 @@ export const MODELS: ModelInfo[] = [
     name: "DeepSeek R1T2", 
     icon: "/models/deepseek.png",
     provider: "DeepSeek"
+  },
+  { 
+    id: "meta-llama/llama-3.3-70b-instruct:free", 
+    name: "Llama 3.3 70B", 
+    icon: "/models/ollama.png",
+    provider: "Ollama"
   },
 ]
 

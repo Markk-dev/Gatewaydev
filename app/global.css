@@ -23,30 +23,30 @@
 }
 
 :root {
-  /* Signature Colors */
-  --signature: #ccff00;
-  --signature-rgb: 204, 255, 0;
+ 
+  --signature: #87ed02;
+  --signature-rgb: 135, 237, 2;
 
-  /* Main Colors */
+
   --background: #fafafa;
   --foreground: #1a1a1a;
   --card: #ffffff;
   --card-foreground: #1a1a1a;
   --popover: #ffffff;
   --popover-foreground: #1a1a1a;
-  --primary: #ccff00;
+  --primary: #87ed02;
   --primary-foreground: #000000;
   --secondary: #f0f0f0;
   --secondary-foreground: #1a1a1a;
   --muted: #e5e5e5;
   --muted-foreground: #666666;
-  --accent: #ccff00;
+  --accent: #87ed02;
   --accent-foreground: #000000;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e0e0e0;
   --input: #ffffff;
-  --ring: #ccff00;
+  --ring: #87ed02;
   --chart-1: #f97316;
   --chart-2: #3b82f6;
   --chart-3: #8b5cf6;
@@ -70,19 +70,19 @@
   --card-foreground: #ffffff;
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
-  --primary: #ccff00;
+  --primary: #87ed02;
   --primary-foreground: #000000;
   --secondary: #262626;
   --secondary-foreground: #ffffff;
   --muted: #404040;
   --muted-foreground: #a0a0a0;
-  --accent: #ccff00;
+  --accent: #87ed02;
   --accent-foreground: #000000;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #303030;
   --input: #262626;
-  --ring: #ccff00;
+  --ring: #87ed02;
   --chart-1: #f97316;
   --chart-2: #3b82f6;
   --chart-3: #8b5cf6;
@@ -108,7 +108,7 @@ body {
   color: var(--foreground);
 }
 
-/* Simple three-dot thinking animation */
+
 @keyframes dot-bounce {
 
   0%,
@@ -128,7 +128,7 @@ body {
   animation: dot-bounce 1.4s ease-in-out infinite;
 }
 
-/* Ease-in animation for input */
+
 @keyframes ease-in-slide {
   0% {
     opacity: 0;
@@ -145,7 +145,7 @@ body {
   animation: ease-in-slide 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-/* New fade-out animation for empty state */
+
 @keyframes fade-out-up {
   from {
     opacity: 1;
@@ -162,7 +162,7 @@ body {
   animation: fade-out-up 0.4s cubic-bezier(0.32, 0, 0.67, 0) forwards;
 }
 
-/* Animated gradient for Gateway text */
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -178,10 +178,10 @@ body {
 }
 
 .animate-gradient {
-  animation: gradient 3s ease infinite;
+  animation: gradient 2s ease infinite;
 }
 
-/* Hide scrollbar but keep functionality */
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
