@@ -13,6 +13,20 @@ interface ReasoningBlockProps {
 export default function ReasoningBlock({ reasoningText, reasoningTime, isComplete, onReasoningComplete }: ReasoningBlockProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [displayedText, setDisplayedText] = useState("")
+  const [liveTimer, setLiveTimer] = useState(0)
+
+  // Live timer that counts up while thinking
+  useEffect(() => {
+    if (isComplete) return
+
+    const startTime = Date.now()
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      setLiveTimer(elapsed)
+    }, 100) // Update every 100ms for smooth counting
+
+    return () => clearInterval(interval)
+  }, [isComplete])
 
   // Stream the reasoning text character by character
   useEffect(() => {
@@ -28,7 +42,7 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
       } else {
         clearInterval(interval)
       }
-    }, 15) // Speed of typing
+    }, 5) // Speed of typing (faster: 5ms per character)
 
     return () => clearInterval(interval)
   }, [reasoningText])
@@ -44,36 +58,39 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
         if (onReasoningComplete) {
           onReasoningComplete()
         }
-      }, 800) // Wait before collapsing and showing answer
+      }, 300) // Wait before collapsing and showing answer (faster: 300ms)
       return () => clearTimeout(timer)
     }
   }, [isComplete, displayedText, reasoningText, onReasoningComplete])
 
-  // Don't show anything if there's no reasoning text yet
-  if (!reasoningText && !isComplete) return null
-
   return (
-    <div className="mb-3">
+    <div className="mt-[-5px]">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center gap-2 text-gray-400 text-xs hover:text-gray-300 transition mb-1"
       >
         <span>
-          {isComplete ? `Reasoned for ${reasoningTime} seconds` : "Thinking..."}
+          {isComplete
+            ? `Reasoned for ${reasoningTime} seconds`
+            : `Thinking... ${liveTimer}s`}
         </span>
-        {isExpanded ? (
-          <ChevronUp size={12} />
-        ) : (
-          <ChevronDown size={12} />
+        {(reasoningText || isComplete) && (
+          <>
+            {isExpanded ? (
+              <ChevronUp size={12} />
+            ) : (
+              <ChevronDown size={12} />
+            )}
+          </>
         )}
       </button>
 
       {/* Reasoning Content - Streams in real-time */}
-      {isExpanded && (
+      {isExpanded && (reasoningText || displayedText) && (
         <div className="mt-1">
           <div className="text-xs leading-relaxed whitespace-pre-wrap italic opacity-50">
-            {displayedText}
+            {displayedText || "Processing your request..."}
             {!isComplete && (
               <span className="inline-block w-0.5 h-3 bg-gray-400 ml-0.5 animate-pulse" />
             )}

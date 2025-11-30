@@ -1,0 +1,371 @@
+{
+  "collegeName": "ST. ANNE COLLEGE LUCENA INC",
+  "location": {
+    "city": "Lucena City",
+    "barangay": "Gulang-Gulang",
+    "country": "Philippines"
+  },
+  "buildingName": "Main Building",
+  "floors": {
+    "ground": {
+      "name": "Ground Floor",
+      "level": 0,
+      "locations": [
+        {
+          "id": "sps-org-chart",
+          "name": "SPS Organizational Chart",
+          "type": "office",
+          "description": "Student Personnel Services organizational structure",
+          "director": "Dr. Nelson Dean",
+          "sections": ["Student Welfare", "Student Development", "Institutional Student Programs and Services"]
+        },
+        {
+          "id": "student-welfare",
+          "name": "Student Welfare",
+          "type": "department",
+          "parentOffice": "SPS"
+        },
+        {
+          "id": "student-development",
+          "name": "Student Development",
+          "type": "department",
+          "parentOffice": "SPS",
+          "services": [
+            {
+              "name": "Guidance and Testing Services",
+              "description": "Student counseling and academic testing"
+            },
+            {
+              "name": "Institutional Alumni and Placement",
+              "description": "Alumni relations and job placement assistance"
+            },
+            {
+              "name": "Student Organization and Activities",
+              "description": "Student clubs and campus activities coordination"
+            },
+            {
+              "name": "Prefect of Discipline",
+              "description": "Student conduct and discipline management"
+            },
+            {
+              "name": "Student Publication",
+              "description": "Campus newspaper and media publications"
+            }
+          ]
+        },
+        {
+          "id": "institutional-programs",
+          "name": "Institutional Student Programs and Services",
+          "type": "department",
+          "parentOffice": "SPS",
+          "services": [
+            {
+              "name": "Admission Services",
+              "description": "New student enrollment and admissions"
+            },
+            {
+              "name": "Scholarship and Financial Assistance",
+              "description": "Financial aid and scholarship programs"
+            },
+            {
+              "name": "Safety and Security Services",
+              "description": "Campus security and safety management"
+            },
+            {
+              "name": "Sports and Cultural Affairs",
+              "description": "Athletic programs and cultural events"
+            },
+            {
+              "name": "Health Services",
+              "description": "Medical clinic and health support"
+            }
+          ]
+        },
+        {
+          "id": "mis",
+          "name": "MIS",
+          "fullName": "Management Information Systems",
+          "type": "office",
+          "description": "Technology support, printing services, and IT assistance",
+          "services": ["Printing", "Technical Guidance", "Equipment Approval"]
+        }
+      ]
+    },
+    "first": {
+      "name": "First Floor",
+      "level": 1,
+      "locations": [
+        {
+          "id": "comlab1",
+          "name": "Comlab1",
+          "fullName": "Computer Laboratory 1",
+          "type": "classroom",
+          "capacity": "Computer lab for classes"
+        },
+        {
+          "id": "registrar",
+          "name": "Registrar",
+          "type": "office",
+          "description": "Student records, transcripts, and enrollment documents"
+        },
+        {
+          "id": "accounting",
+          "name": "Accounting",
+          "type": "office",
+          "description": "Financial records and accounting services"
+        },
+        {
+          "id": "cashier",
+          "name": "Cashier",
+          "type": "office",
+          "description": "Payment processing and tuition collection"
+        },
+        {
+          "id": "avr",
+          "name": "AVR",
+          "fullName": "Audio Visual Room",
+          "type": "facility",
+          "description": "Multimedia presentations and events"
+        },
+        {
+          "id": "stairs-1f",
+          "name": "Stairs",
+          "type": "navigation",
+          "connects": ["ground", "first", "second"]
+        }
+      ]
+    },
+    "second": {
+      "name": "Second Floor",
+      "level": 2,
+      "locations": [
+        {
+          "id": "comlab2",
+          "name": "Comlab2",
+          "fullName": "Computer Laboratory 2",
+          "type": "classroom",
+          "capacity": "Computer lab for classes"
+        },
+        {
+          "id": "physical-therapy",
+          "name": "Physical Therapy Room",
+          "type": "facility",
+          "description": "Physical therapy and rehabilitation services"
+        },
+        {
+          "id": "library",
+          "name": "Library",
+          "type": "facility",
+          "description": "Books, research materials, and study area"
+        },
+        {
+          "id": "comfort-room-2f",
+          "name": "Comfort Room",
+          "type": "facility",
+          "description": "Restroom facilities"
+        },
+        {
+          "id": "stairs-2f",
+          "name": "Stairs",
+          "type": "navigation",
+          "connects": ["first", "second", "third"]
+        }
+      ]
+    },
+    "third": {
+      "name": "Third Floor",
+      "level": 3,
+      "locations": [
+        {
+          "id": "deans-office",
+          "name": "Dean's Office",
+          "type": "office",
+          "description": "Academic dean and administrative leadership"
+        },
+        {
+          "id": "faculty-office",
+          "name": "Faculty Office",
+          "type": "office",
+          "description": "Faculty workspace and consultation area"
+        },
+        {
+          "id": "mb301",
+          "name": "MB301",
+          "fullName": "Main Building Room 301",
+          "type": "classroom",
+          "description": "Regular classroom (MB = Main Building)"
+        },
+        {
+          "id": "mb302",
+          "name": "MB302",
+          "fullName": "Main Building Room 302",
+          "type": "classroom",
+          "description": "Regular classroom (MB = Main Building)"
+        },
+        {
+          "id": "mb303",
+          "name": "MB303",
+          "fullName": "Main Building Room 303",
+          "type": "classroom",
+          "description": "Regular classroom (MB = Main Building)"
+        },
+        {
+          "id": "comfort-room-3f",
+          "name": "Comfort Room",
+          "type": "facility",
+          "description": "Restroom facilities"
+        },
+        {
+          "id": "stairs-3f",
+          "name": "Stairs",
+          "type": "navigation",
+          "connects": ["second", "third", "fourth"]
+        }
+      ]
+    },
+    "fourth": {
+      "name": "Fourth Floor",
+      "level": 4,
+      "locations": [
+        {
+          "id": "tesda-room",
+          "name": "TESDA Room",
+          "type": "office",
+          "description": "Technical Education and Skills Development Authority office"
+        }
+      ]
+    }
+  },
+  "faculty": [
+    {
+      "id": "louise-lagrazon",
+      "name": "Ma'am Louise Lagrazon",
+      "title": "Instructor",
+      "primaryLocation": {
+        "floor": "second",
+        "room": "comlab2"
+      },
+      "alternativeLocation": {
+        "floor": "third",
+        "room": "faculty-office"
+      },
+      "schedule": "Regular weekdays"
+    },
+    {
+      "id": "allan-pabellano",
+      "name": "Sir Allan Pabellano",
+      "title": "Instructor",
+      "primaryLocation": {
+        "floor": "first",
+        "room": "comlab1"
+      },
+      "alternativeLocation": {
+        "floor": "third",
+        "room": "faculty-office"
+      },
+      "schedule": "Regular weekdays"
+    },
+    {
+      "id": "mark-valencia",
+      "name": "Sir Mark Bryan Valencia",
+      "title": "Instructor",
+      "primaryLocation": {
+        "floor": "first",
+        "room": "comlab1"
+      },
+      "alternativeLocation": {
+        "floor": "third",
+        "room": "faculty-office"
+      },
+      "schedule": "Saturday only",
+      "availability": "Saturday"
+    },
+    {
+      "id": "rafael-gellangarin",
+      "name": "Sir Rafael Gellangarin",
+      "title": "Instructor",
+      "locations": [
+        {
+          "floor": "first",
+          "room": "comlab1"
+        },
+        {
+          "floor": "second",
+          "room": "comlab2"
+        },
+        {
+          "floor": "third",
+          "room": "faculty-office"
+        }
+      ],
+      "schedule": "Usually Saturday only",
+      "availability": "Saturday"
+    },
+    {
+      "id": "jennifer-magbanlac",
+      "name": "Ma'am Jennifer Magbanlac",
+      "title": "Program Chair - BSIT",
+      "role": "BSIT Program Chair",
+      "locations": [
+        {
+          "floor": "ground",
+          "room": "mis"
+        },
+        {
+          "floor": "third",
+          "room": "faculty-office"
+        }
+      ],
+      "schedule": "Regular weekdays"
+    },
+    {
+      "id": "carmelta-maranan",
+      "name": "Ma'am Carmelta Maranan",
+      "title": "Instructor",
+      "specialization": "Historical subjects",
+      "primaryLocation": {
+        "floor": "third",
+        "room": "mb301"
+      },
+      "alternativeLocation": {
+        "floor": "third",
+        "room": "faculty-office"
+      },
+      "schedule": "Regular weekdays",
+      "note": "Usually teaches in MB301, may be at Faculty Office when not in class"
+    }
+  ],
+  "quickAccess": {
+    "printing": {
+      "location": "MIS",
+      "floor": "ground"
+    },
+    "enrollment": {
+      "location": "Registrar",
+      "floor": "first"
+    },
+    "payment": {
+      "location": "Cashier",
+      "floor": "first"
+    },
+    "scholarship": {
+      "location": "Institutional Student Programs and Services",
+      "floor": "ground",
+      "service": "Scholarship and Financial Assistance"
+    },
+    "library": {
+      "location": "Library",
+      "floor": "second"
+    },
+    "computerLabs": [
+      {
+        "name": "Comlab1",
+        "floor": "first"
+      },
+      {
+        "name": "Comlab2",
+        "floor": "second"
+      }
+    ]
+  }
+}

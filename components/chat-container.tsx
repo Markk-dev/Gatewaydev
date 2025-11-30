@@ -22,10 +22,11 @@ interface ChatContainerProps {
   selectedModel: string
   onSendMessage: (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => void
   isReasoningMode?: boolean
+  isNavigationMode?: boolean
   preloadedMessageIds?: Set<string>
 }
 
-export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage, isReasoningMode = false, preloadedMessageIds }: ChatContainerProps) {
+export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage, isReasoningMode = false, isNavigationMode = false, preloadedMessageIds }: ChatContainerProps) {
   const [inputValue, setInputValue] = useState("")
 
   const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => {
@@ -46,7 +47,9 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
         isThinking={isThinking} 
         selectedModel={selectedModel} 
         isReasoningMode={isReasoningMode}
+        isNavigationMode={isNavigationMode}
         preloadedMessageIds={preloadedMessageIds}
+        inputValue={inputValue}
       />
 
       {/* Input */}

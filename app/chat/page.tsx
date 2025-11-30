@@ -62,9 +62,9 @@ export default function ChatPage() {
     checkAuth()
   }, [router])
 
-  const tryModelWithTimeout = async (model: string, history: Message[], isReasoning: boolean = false): Promise<string> => {
+  const tryModelWithTimeout = async (model: string, history: Message[], isReasoning: boolean = false, isNavigation: boolean = false): Promise<string> => {
     return Promise.race([
-      sendChatMessage(model, history, isReasoning).then(response => response.choices[0].message.content),
+      sendChatMessage(model, history, isReasoning, isNavigation).then(response => response.choices[0].message.content),
       new Promise<string>((_, reject) => 
         setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT)
       )
@@ -156,7 +156,7 @@ export default function ChatPage() {
     
     while (attempts < maxAttempts) {
       try {
-        const aiResponse = await tryModelWithTimeout(currentModel, newHistory, mode === "reasoning")
+        const aiResponse = await tryModelWithTimeout(currentModel, newHistory, mode === "reasoning", mode === "navigation")
         
         const endTime = Date.now()
         const reasoningTime = Math.round((endTime - startTime) / 1000)
@@ -312,6 +312,7 @@ export default function ChatPage() {
         selectedModel={selectedModel}
         onSendMessage={handleSendMessage}
         isReasoningMode={mode === "reasoning"}
+        isNavigationMode={mode === "navigation"}
         preloadedMessageIds={preloadedMessageIds}
       />
     </ChatLayout>

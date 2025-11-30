@@ -40,13 +40,24 @@ def chat():
         model = data.get('model')
         messages = data.get('messages', [])
         reasoning_mode = data.get('reasoning_mode', False)
+        navigation_mode = data.get('navigation_mode', False)
         
         if not model or not messages:
             return jsonify({'error': 'Model and messages are required'}), 400
         
        
         if not messages or messages[0].get('role') != 'system':
-            if reasoning_mode:
+            if navigation_mode:
+                # Load navigation system prompt
+                nav_prompt_path = BASE_DIR / 'lib' / 'navigation-system-prompt.txt'
+                with open(nav_prompt_path, 'r', encoding='utf-8') as f:
+                    nav_content = f.read()
+                
+                system_prompt = {
+                    'role': 'system',
+                    'content': nav_content
+                }
+            elif reasoning_mode:
                 system_prompt = {
                     'role': 'system',
                     'content': '''You are Gateway, an AI assistant developed by Mark Vincent Madrid and Renier Delmote. You are in reasoning mode. ALWAYS show your thinking process FIRST before giving your answer.
@@ -55,7 +66,7 @@ CRITICAL: Your response MUST follow this exact structure:
 
 <reasoning>
 [Brief internal thought - 2-4 sentences max, natural and conversational]
-Example: "User's asking about string theory. Need to explain it simply - it's about tiny vibrating strings instead of point particles. Should mention the extra dimensions and why it matters for physics. Keep it clear and accessible."
+Example: "User's asking about something. Need to explain it simply"
 </reasoning>
 
 [Your final, clear answer here]
