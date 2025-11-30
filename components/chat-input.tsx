@@ -171,7 +171,10 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
           </div>
         )}
 
-        <div className="flex items-center gap-3 bg-card border border-border rounded-full px-4 py-3 max-w-2xl w-full min-h-[42px]">
+        <div className={`flex items-center gap-3 bg-card border rounded-full px-4 py-3 max-w-2xl w-full min-h-[42px] transition-all duration-300 ${isDisabled
+            ? 'border-red-500/20 bg-red-500/5'
+            : 'border-border'
+          }`}>
           <input
             ref={fileInputRef}
             type="file"

@@ -28,6 +28,7 @@ interface ChatContainerProps {
 
 export default function ChatContainer({ messages, isThinking, selectedModel, onSendMessage, isReasoningMode = false, isNavigationMode = false, preloadedMessageIds }: ChatContainerProps) {
   const [inputValue, setInputValue] = useState("")
+  const [isBotTyping, setIsBotTyping] = useState(false)
 
   const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => {
     const userText = text.trim()
@@ -37,6 +38,10 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
       onSendMessage(userText || "What does this document say?", extractedText, fileType, fileName, file)
       setInputValue("")
     }
+  }
+
+  const handleTypingStatusChange = (isTyping: boolean) => {
+    setIsBotTyping(isTyping)
   }
 
   return (
@@ -50,10 +55,11 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
         isNavigationMode={isNavigationMode}
         preloadedMessageIds={preloadedMessageIds}
         inputValue={inputValue}
+        onTypingStatusChange={handleTypingStatusChange}
       />
 
-      {/* Input */}
-      <ChatInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} isDisabled={isThinking} />
+      {/* Input - Disabled when thinking OR when bot is typing */}
+      <ChatInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} isDisabled={isThinking || isBotTyping} />
     </div>
   )
 }

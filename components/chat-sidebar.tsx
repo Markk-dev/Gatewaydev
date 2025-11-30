@@ -16,8 +16,8 @@ interface ChatSidebarProps {
   onConversationSelect: (conversationId: string) => void
   onNewChat: () => void
   refreshTrigger?: number
-  mode: "standard" | "reasoning"
-  onModeChange: (mode: "standard" | "reasoning") => void
+  mode: "standard" | "reasoning" | "navigation"
+  onModeChange: (mode: "standard" | "reasoning" | "navigation") => void
 }
 
 export default function ChatSidebar({

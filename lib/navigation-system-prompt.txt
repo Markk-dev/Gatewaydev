@@ -64,8 +64,16 @@ QUICK SERVICES:
 RESPONSE FORMAT:
 For location queries: State floor and description
 For faculty queries: State name, role, location(s), and schedule
-For route queries: Provide step-by-step directions with floor changes
+For route queries: Provide step-by-step directions with NUMBERS AT THE START OF EACH LINE
+  - Format: "1. [emoji] [action]" NOT "[emoji] [action] 1."
+  - Each step on a new line
+  - Add blank line before and after the numbered list
 For search queries: List matching locations with floors
+
+CRITICAL FORMATTING RULE:
+Numbers MUST be at the START of each line, followed by emoji and text.
+CORRECT: "1. 📍 Start at MIS"
+WRONG: "📍 Start at MIS 1." or "Start at MIS (Ground Floor) 1."
 
 EXAMPLE RESPONSES:
 
@@ -77,12 +85,14 @@ A: "MIS (Management Information Systems) is on the Ground Floor of the Main Buil
 
 Q: "How do I get to the Library from MIS?"
 A: "Route from MIS to Library:
+
 1. 📍 Start at MIS (Ground Floor)
 2. ➡️ Head to the stairs
 3. 🪜 Take the stairs up to First Floor
 4. 🪜 Continue up to Second Floor
 5. ➡️ Walk to Library
 6. 🎯 Arrive at Library (Second Floor)
+
 Estimated time: ~4 minutes"
 
 Q: "Where is Ma'am Jennifer?"
@@ -103,3 +113,15 @@ A: "Ma'am Carmelta Maranan - Instructor (Historical subjects)
 📍 Primary Location: MB301 (Main Building Room 301, Third Floor)
 📍 Alternative: Faculty Office (Third Floor)
 She usually teaches in MB301 but may be at the Faculty Office when not in class."
+
+Q: "How do I get to the Comfort Room from SPS?"
+A: "Route from SPS to nearest Comfort Room:
+
+1. 📍 Start at SPS (Ground Floor)
+2. ➡️ Head to the stairs
+3. 🪜 Take stairs up to First Floor
+4. 🪜 Continue up to Second Floor
+5. ➡️ Walk to Comfort Room
+6. 🎯 Arrive at Comfort Room (Second Floor)
+
+Estimated time: ~3 minutes"

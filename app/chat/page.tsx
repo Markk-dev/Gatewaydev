@@ -45,7 +45,7 @@ export default function ChatPage() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [refreshSidebar, setRefreshSidebar] = useState(0)
-  const [mode, setMode] = useState<"standard" | "reasoning">("standard")
+  const [mode, setMode] = useState<"standard" | "reasoning" | "navigation">("standard")
   const [preloadedMessageIds, setPreloadedMessageIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {

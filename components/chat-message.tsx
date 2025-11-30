@@ -32,6 +32,7 @@ const ChatMessages = memo(function ChatMessages({
   isNavigationMode = false,
   preloadedMessageIds = new Set<string>(),
   inputValue = "",
+  onTypingStatusChange,
 }: {
   messages: Message[]
   isThinking: boolean
@@ -40,6 +41,7 @@ const ChatMessages = memo(function ChatMessages({
   isNavigationMode?: boolean
   preloadedMessageIds?: Set<string>
   inputValue?: string
+  onTypingStatusChange?: (isTyping: boolean) => void
 }) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [completedMessages, setCompletedMessages] = useState<Set<string>>(preloadedMessageIds)
@@ -94,7 +96,13 @@ const ChatMessages = memo(function ChatMessages({
 
   // Mark all messages except the last one as completed
   useEffect(() => {
-    if (messages.length === 0) return
+    if (messages.length === 0) {
+      // No messages, ensure typing is disabled
+      if (onTypingStatusChange) {
+        onTypingStatusChange(false)
+      }
+      return
+    }
 
     const lastMessage = messages[messages.length - 1]
 
@@ -115,11 +123,26 @@ const ChatMessages = memo(function ChatMessages({
         })
       }
     }
-  }, [messages])
+
+    // Check if we should enable/disable typing based on last message
+    if (onTypingStatusChange) {
+      const isLastMessageBotAndIncomplete = Boolean(
+        lastMessage.isBot &&
+        lastMessage.text &&
+        !completedMessages.has(lastMessage.id) &&
+        (!lastMessage.reasoning || reasoningCompleted.has(lastMessage.id))
+      )
+      onTypingStatusChange(isLastMessageBotAndIncomplete)
+    }
+  }, [messages, completedMessages, reasoningCompleted, onTypingStatusChange])
 
   const handleTypingComplete = useCallback((messageId: string) => {
     setCompletedMessages(prev => new Set(prev).add(messageId))
-  }, [])
+    // Notify parent that typing is complete
+    if (onTypingStatusChange) {
+      onTypingStatusChange(false)
+    }
+  }, [onTypingStatusChange])
 
   const hasMessages = messages.length > 0
   const showEmptyState = !hasMessages && !isThinking
@@ -258,6 +281,18 @@ const ChatMessages = memo(function ChatMessages({
         </div>
       )}
     </div>
+  )
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent re-renders
+  return (
+    prevProps.messages === nextProps.messages &&
+    prevProps.isThinking === nextProps.isThinking &&
+    prevProps.selectedModel === nextProps.selectedModel &&
+    prevProps.isReasoningMode === nextProps.isReasoningMode &&
+    prevProps.isNavigationMode === nextProps.isNavigationMode &&
+    prevProps.preloadedMessageIds === nextProps.preloadedMessageIds &&
+    prevProps.inputValue === nextProps.inputValue &&
+    prevProps.onTypingStatusChange === nextProps.onTypingStatusChange
   )
 })
 
