@@ -39,23 +39,22 @@ class CampusNavigator:
         with open(json_file_path, 'r') as f:
             self.data = json.load(f)
         
-        self.graph = {}  # Adjacency list with weights
-        self.nodes = {}  # Node lookup by ID
-        self.location_index = {}  # Search index for locations
-        self.faculty_index = {}  # Search index for faculty
-        self.department_index = {}  # Search index for departments
-        self.service_index = {}  # Search index for services
+        self.graph = {}  
+        self.nodes = {}  
+        self.location_index = {}  
+        self.faculty_index = {}  
+        self.department_index = {}  
+        self.service_index = {}  
         self.accessibility_mode = accessibility_mode
-        self.restricted_rooms = set()  # Rooms marked as busy/restricted
+        self.restricted_rooms = set()  
         
         self._build_graph()
         self._build_indexes()
     
     def _build_graph(self):
-        """Build the graph structure with nodes and edges"""
         floors = self.data['floors']
         
-        # Create nodes for all locations
+        
         for floor_key, floor_data in floors.items():
             floor_name = floor_data['name']
             floor_level = floor_data['level']
@@ -74,50 +73,47 @@ class CampusNavigator:
                 self.nodes[node_id] = node
                 self.graph[node_id] = []
         
-        # Add edges within same floor (adjacent rooms)
+        
         self._add_floor_connections()
         
-        # Add stair connections between floors
+        
         if not self.accessibility_mode:
             self._add_stair_connections()
         
-        # Add elevator connections (if accessibility mode)
+        
         if self.accessibility_mode:
             self._add_elevator_connections()
     
     def _add_floor_connections(self):
-        """Connect adjacent locations on the same floor"""
-        # Ground Floor connections
+        
         ground_locations = ['sps-org-chart', 'student-welfare', 'student-development', 
                            'institutional-programs', 'mis']
         self._connect_sequential(ground_locations, weight=1)
         
-        # First Floor connections
+        
         first_floor = ['comlab1', 'stairs-1f', 'registrar', 'accounting', 'cashier', 'avr']
         self._connect_sequential(first_floor, weight=1)
         
-        # Second Floor connections
+        
         second_floor = ['comlab2', 'stairs-2f', 'physical-therapy', 'library', 'comfort-room-2f']
         self._connect_sequential(second_floor, weight=1)
         
-        # Third Floor connections
+        
         third_floor = ['deans-office', 'faculty-office', 'stairs-3f', 'mb301', 'mb302', 'mb303', 'comfort-room-3f']
         self._connect_sequential(third_floor, weight=1)
     
     def _connect_sequential(self, locations: List[str], weight: int = 1):
-        """Connect locations sequentially (bidirectional)"""
         for i in range(len(locations) - 1):
             if locations[i] in self.graph and locations[i + 1] in self.graph:
                 self.graph[locations[i]].append((locations[i + 1], weight))
                 self.graph[locations[i + 1]].append((locations[i], weight))
     
     def _add_stair_connections(self):
-        """Connect stairs between floors"""
-        # Stairs connections with higher weight (takes time to go up/down)
+        
         stair_connections = [
-            ('stairs-1f', 'mis', 2),  # Ground to First
-            ('stairs-1f', 'stairs-2f', 3),  # First to Second
-            ('stairs-2f', 'stairs-3f', 3),  # Second to Third
+            ('stairs-1f', 'mis', 2),  
+            ('stairs-1f', 'stairs-2f', 3),  
+            ('stairs-2f', 'stairs-3f', 3),  
         ]
         
         for stair1, stair2, weight in stair_connections:
@@ -126,38 +122,36 @@ class CampusNavigator:
                 self.graph[stair2].append((stair1, weight))
     
     def _add_elevator_connections(self):
-        """Connect floors via elevator (accessibility mode)"""
-        # Note: Add elevator nodes to JSON if building has elevators
-        # For now, we'll create virtual elevator connections
-        # This is a placeholder - update when elevator data is available
+        
+        
+        
         pass
     
     def _build_indexes(self):
-        """Build search indexes for quick lookup"""
-        # Index locations by name (case-insensitive)
+        
         for node_id, node in self.nodes.items():
             name_lower = node.name.lower()
             self.location_index[name_lower] = node_id
             
-            # Also index by full name if available
+            
             if node.full_name:
                 full_name_lower = node.full_name.lower()
                 self.location_index[full_name_lower] = node_id
         
-        # Index faculty
+        
         for faculty in self.data.get('faculty', []):
             name_lower = faculty['name'].lower()
             self.faculty_index[name_lower] = faculty
         
-        # Index departments and services
+        
         for floor_key, floor_data in self.data['floors'].items():
             for location in floor_data['locations']:
-                # Index departments
+                
                 if location['type'] == 'department':
                     dept_name = location['name'].lower()
                     self.department_index[dept_name] = location['id']
                     
-                    # Index services within departments
+                    
                     if 'services' in location:
                         for service in location['services']:
                             service_name = service['name'].lower()
@@ -167,15 +161,14 @@ class CampusNavigator:
                             }
     
     def dijkstra(self, start_id: str, end_id: str) -> Optional[PathResult]:
-        """Find shortest path using Dijkstra's algorithm"""
         if start_id not in self.graph or end_id not in self.graph:
             return None
         
-        # Check if destination is restricted
+        
         if end_id in self.restricted_rooms:
             print(f"Warning: {self.nodes[end_id].name} is currently restricted or busy.")
         
-        # Priority queue: (distance, node_id, path)
+        
         pq = [(0, start_id, [start_id])]
         visited = set()
         distances = {node_id: float('inf') for node_id in self.graph}
@@ -189,7 +182,7 @@ class CampusNavigator:
             
             visited.add(current_node)
             
-            # Found destination
+            
             if current_node == end_id:
                 nodes = [self.nodes[node_id] for node_id in path]
                 directions = self._generate_directions(nodes)
@@ -208,10 +201,10 @@ class CampusNavigator:
                     accessibility_friendly=accessibility_friendly
                 )
             
-            # Explore neighbors
+            
             for neighbor, weight in self.graph[current_node]:
                 if neighbor not in visited:
-                    # Skip restricted rooms unless it's the destination
+                    
                     if neighbor in self.restricted_rooms and neighbor != end_id:
                         continue
                     
@@ -223,7 +216,6 @@ class CampusNavigator:
         return None
     
     def _count_floor_changes(self, nodes: List[Node]) -> int:
-        """Count number of floor changes in path"""
         changes = 0
         for i in range(1, len(nodes)):
             if nodes[i].floor_level != nodes[i-1].floor_level:
@@ -231,26 +223,23 @@ class CampusNavigator:
         return changes
     
     def _uses_stairs(self, nodes: List[Node]) -> bool:
-        """Check if path uses stairs"""
         return any(node.type == 'navigation' and 'stairs' in node.id.lower() for node in nodes)
     
     def _estimate_time(self, distance: int, floor_changes: int) -> float:
-        """Estimate walking time in minutes"""
-        # Assume 1 unit = 30 seconds of walking
-        # Floor change adds 1 minute
+        
+        
         base_time = distance * 0.5
         floor_time = floor_changes * 1.0
         return round(base_time + floor_time, 1)
     
     def _generate_directions(self, nodes: List[Node]) -> List[str]:
-        """Generate human-readable directions from path"""
         if len(nodes) <= 1:
             return ["You are already at your destination."]
         
         directions = []
         current_floor = nodes[0].floor_level
         
-        # Starting point
+        
         start_desc = nodes[0].full_name or nodes[0].name
         directions.append(f"📍 Start at {start_desc} ({nodes[0].floor})")
         
@@ -258,7 +247,7 @@ class CampusNavigator:
             prev_node = nodes[i - 1]
             curr_node = nodes[i]
             
-            # Check for floor change
+            
             if curr_node.floor_level != current_floor:
                 floor_diff = curr_node.floor_level - current_floor
                 direction = "up" if floor_diff > 0 else "down"
@@ -270,17 +259,17 @@ class CampusNavigator:
                         directions.append(f"🪜 Take the stairs {direction} to {curr_node.floor}")
                 current_floor = curr_node.floor_level
             else:
-                # Same floor movement
+                
                 if curr_node.type == 'navigation':
                     directions.append(f"➡️  Head to the stairs")
                 elif i == len(nodes) - 1:
-                    # Last step
+                    
                     curr_desc = curr_node.full_name or curr_node.name
                     directions.append(f"➡️  Walk to {curr_desc}")
                 else:
                     directions.append(f"➡️  Pass by {curr_node.name}")
         
-        # Destination
+        
         dest_desc = nodes[-1].full_name or nodes[-1].name
         directions.append(f"🎯 Arrive at {dest_desc} ({nodes[-1].floor})")
         
@@ -290,32 +279,31 @@ class CampusNavigator:
         return directions
     
     def find_location(self, query: str) -> Optional[str]:
-        """Find location ID by name or partial match"""
         query_lower = query.lower()
         
-        # Exact match
+        
         if query_lower in self.location_index:
             return self.location_index[query_lower]
         
-        # Check departments
+        
         if query_lower in self.department_index:
             return self.department_index[query_lower]
         
-        # Check services
+        
         if query_lower in self.service_index:
             return self.service_index[query_lower]['department_id']
         
-        # Partial match
+        
         for name, node_id in self.location_index.items():
             if query_lower in name or name in query_lower:
                 return node_id
         
-        # Partial match in departments
+        
         for dept_name, dept_id in self.department_index.items():
             if query_lower in dept_name:
                 return dept_id
         
-        # Partial match in services
+        
         for service_name, service_data in self.service_index.items():
             if query_lower in service_name:
                 return service_data['department_id']
@@ -323,14 +311,13 @@ class CampusNavigator:
         return None
     
     def find_faculty(self, query: str) -> Optional[Dict]:
-        """Find faculty by name"""
         query_lower = query.lower()
         
-        # Exact match
+        
         if query_lower in self.faculty_index:
             return self.faculty_index[query_lower]
         
-        # Partial match
+        
         for name, faculty_data in self.faculty_index.items():
             if query_lower in name:
                 return faculty_data
@@ -338,7 +325,6 @@ class CampusNavigator:
         return None
     
     def get_faculty_locations(self, faculty_name: str, current_day: Optional[DayOfWeek] = None) -> List[Tuple[str, str, str]]:
-        """Get all possible locations for a faculty member with availability info"""
         faculty = self.find_faculty(faculty_name)
         if not faculty:
             return []
@@ -347,17 +333,17 @@ class CampusNavigator:
         availability = faculty.get('availability', 'Regular weekdays')
         schedule = faculty.get('schedule', 'Regular weekdays')
         
-        # Check if faculty is available today
+        
         is_available = self._check_faculty_availability(faculty, current_day)
         
-        # Single primary location
+        
         if 'primaryLocation' in faculty:
             loc = faculty['primaryLocation']
             floor_key = loc['floor']
             room_id = loc['room']
             locations.append((room_id, self.data['floors'][floor_key]['name'], schedule))
         
-        # Multiple locations
+        
         if 'locations' in faculty:
             for loc in faculty['locations']:
                 floor_key = loc['floor']
@@ -367,7 +353,6 @@ class CampusNavigator:
         return locations
     
     def _check_faculty_availability(self, faculty: Dict, current_day: Optional[DayOfWeek]) -> bool:
-        """Check if faculty is available on given day"""
         if not current_day:
             return True
         
@@ -384,7 +369,6 @@ class CampusNavigator:
         return True
     
     def mark_room_restricted(self, room_name: str, restricted: bool = True):
-        """Mark a room as restricted/busy or available"""
         room_id = self.find_location(room_name)
         if room_id:
             if restricted:
@@ -393,7 +377,6 @@ class CampusNavigator:
                 self.restricted_rooms.discard(room_id)
     
     def search_all(self, query: str) -> Dict[str, List]:
-        """Search across all categories: locations, faculty, departments, services"""
         query_lower = query.lower()
         results = {
             'locations': [],
@@ -402,7 +385,7 @@ class CampusNavigator:
             'services': []
         }
         
-        # Search locations
+        
         for name, node_id in self.location_index.items():
             if query_lower in name:
                 node = self.nodes[node_id]
@@ -414,12 +397,12 @@ class CampusNavigator:
                     'description': node.description
                 })
         
-        # Search faculty
+        
         for name, faculty_data in self.faculty_index.items():
             if query_lower in name:
                 results['faculty'].append(faculty_data)
         
-        # Search departments
+        
         for dept_name, dept_id in self.department_index.items():
             if query_lower in dept_name:
                 node = self.nodes[dept_id]
@@ -428,7 +411,7 @@ class CampusNavigator:
                     'floor': node.floor
                 })
         
-        # Search services
+        
         for service_name, service_data in self.service_index.items():
             if query_lower in service_name:
                 results['services'].append(service_data['service'])
@@ -436,7 +419,6 @@ class CampusNavigator:
         return results
     
     def navigate(self, start: str, destination: str) -> Optional[PathResult]:
-        """Main navigation function"""
         start_id = self.find_location(start)
         dest_id = self.find_location(destination)
         
@@ -451,7 +433,6 @@ class CampusNavigator:
         return self.dijkstra(start_id, dest_id)
     
     def navigate_to_faculty(self, start: str, faculty_name: str, current_day: Optional[DayOfWeek] = None) -> Optional[PathResult]:
-        """Navigate to a faculty member's location with availability check"""
         start_id = self.find_location(start)
         if not start_id:
             print(f"Could not find starting location: {start}")
@@ -462,7 +443,7 @@ class CampusNavigator:
             print(f"Could not find faculty: {faculty_name}")
             return None
         
-        # Check availability
+        
         is_available = self._check_faculty_availability(faculty, current_day)
         if not is_available:
             print(f"⚠️  {faculty['name']} is typically not available on this day.")
@@ -473,7 +454,7 @@ class CampusNavigator:
             print(f"Could not find location for faculty: {faculty_name}")
             return None
         
-        # Find shortest path to any of the faculty's locations
+        
         best_result = None
         best_distance = float('inf')
         
@@ -489,7 +470,6 @@ class CampusNavigator:
         return best_result
     
     def print_path(self, result: PathResult):
-        """Pretty print the path result"""
         if not result:
             print("❌ No path found!")
             return
@@ -519,12 +499,12 @@ class CampusNavigator:
         print(f"\n{'='*70}\n")
 
 
-# Example usage
+
 if __name__ == "__main__":
     print("🎓 CAMPUS NAVIGATION SYSTEM")
     print("=" * 70)
     
-    # Example 1: Basic Navigation
+    
     print("\n📍 Example 1: Navigate from MIS to Library")
     print("-" * 70)
     navigator = CampusNavigator('lib/PathFinding.json')
@@ -532,21 +512,21 @@ if __name__ == "__main__":
     if result:
         navigator.print_path(result)
     
-    # Example 2: Faculty Search with Day Awareness
+    
     print("\n👨‍🏫 Example 2: Find Ma'am Jennifer Magbanlac from Comlab1 (Weekday)")
     print("-" * 70)
     result = navigator.navigate_to_faculty("Comlab1", "Jennifer Magbanlac", DayOfWeek.MONDAY)
     if result:
         navigator.print_path(result)
     
-    # Example 3: Department/Service Search
+    
     print("\n🏢 Example 3: Navigate to Scholarship Services from Comlab2")
     print("-" * 70)
     result = navigator.navigate("Comlab2", "Scholarship and Financial Assistance")
     if result:
         navigator.print_path(result)
     
-    # Example 4: Accessibility Mode
+    
     print("\n♿ Example 4: Accessible Route from Ground Floor to Third Floor")
     print("-" * 70)
     print("Note: Accessibility mode enabled (elevator preference)")
@@ -557,7 +537,7 @@ if __name__ == "__main__":
     else:
         print("⚠️  No accessible route available. Building may need elevator access.")
     
-    # Example 5: Dynamic Room Restrictions
+    
     print("\n🚫 Example 5: Navigate with Room Restrictions")
     print("-" * 70)
     navigator.mark_room_restricted("Comlab1", restricted=True)
@@ -566,7 +546,7 @@ if __name__ == "__main__":
     if result:
         navigator.print_path(result)
     
-    # Example 6: Search All Categories
+    
     print("\n🔍 Example 6: Search for 'guidance'")
     print("-" * 70)
     search_results = navigator.search_all("guidance")
@@ -581,14 +561,14 @@ if __name__ == "__main__":
         for loc in search_results['locations']:
             print(f"  • {loc['name']} ({loc['floor']})")
     
-    # Example 7: Saturday Schedule Check
+    
     print("\n📅 Example 7: Find Sir Mark Valencia on Saturday")
     print("-" * 70)
     result = navigator.navigate_to_faculty("Library", "Mark Valencia", DayOfWeek.SATURDAY)
     if result:
         navigator.print_path(result)
     
-    # Example 8: Quick Access Locations
+    
     print("\n⚡ Example 8: Quick Access - Where to print?")
     print("-" * 70)
     quick_access = navigator.data.get('quickAccess', {})
