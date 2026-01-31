@@ -14,7 +14,6 @@ export default function ModeSwitcher({ mode, onModeChange }: ModeSwitcherProps) 
     if (newMode === mode || isChanging) return
     
     setIsChanging(true)
-    // Delay the actual mode change to allow fade-out animation
     setTimeout(() => {
       onModeChange(newMode)
       setIsChanging(false)
@@ -29,15 +28,12 @@ export default function ModeSwitcher({ mode, onModeChange }: ModeSwitcherProps) 
 
   return (
     <div className="w-full bg-white/5 rounded-lg p-0.5 flex relative border border-gray-800">
-      {/* Animated background slider */}
       <div
         className="absolute top-0.5 bottom-0.5 w-[calc(33.333%-2px)] bg-[#87ed02] rounded-md transition-all duration-300 ease-in-out"
         style={{
           left: getSliderPosition(),
         }}
       />
-
-      {/* Standard button */}
       <button
         onClick={() => handleModeChange("standard")}
         disabled={isChanging}
@@ -46,8 +42,6 @@ export default function ModeSwitcher({ mode, onModeChange }: ModeSwitcherProps) 
       >
         Standard
       </button>
-
-      {/* Reasoning button */}
       <button
         onClick={() => handleModeChange("reasoning")}
         disabled={isChanging}
@@ -56,8 +50,6 @@ export default function ModeSwitcher({ mode, onModeChange }: ModeSwitcherProps) 
       >
         Reasoning
       </button>
-
-      {/* Navigation button */}
       <button
         onClick={() => handleModeChange("navigation")}
         disabled={isChanging}

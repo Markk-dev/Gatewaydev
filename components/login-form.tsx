@@ -57,10 +57,10 @@ export function LoginForm({
               href="#"
               className="flex flex-col items-center gap-2 font-medium"
             >
-              <img src="/logo-icon.svg" alt="Gateway" className="h-12 w-12" />
+              <img src="/logo-icon.svg" alt="Solaris" className="h-12 w-12" />
             </a>
             <h1 className="text-xl font-bold">
-              Welcome to <span className="bg-gradient-to-r from-[#6dc700] via-[#7dd604] via-[#86ee02] via-[#9ef520] via-[#7dd604] to-[#6dc700] bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">Gateway</span>
+              Welcome to <span className="bg-gradient-to-r from-[#6dc700] via-[#7dd604] via-[#86ee02] via-[#9ef520] via-[#7dd604] to-[#6dc700] bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">Solaris</span>
             </h1>
             <div className="text-center text-sm">
               {isSignUp ? "Already have an account? " : "Don't have an account? "}

@@ -32,8 +32,6 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
 
   const handleSubmit = (text: string, extractedText?: string, fileType?: 'image' | 'pdf', fileName?: string, file?: File) => {
     const userText = text.trim()
-    
-    // Send both separately - extracted text is for context only
     if (userText || extractedText) {
       onSendMessage(userText || "What does this document say?", extractedText, fileType, fileName, file)
       setInputValue("")
@@ -46,7 +44,6 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
 
   return (
     <div className="flex-1 flex flex-col bg-background rounded-tr-xl rounded-br-xl overflow-hidden my-6 mr-6 shadow-2xl px-12 pt-6">
-      {/* Messages */}
       <ChatMessages 
         messages={messages} 
         isThinking={isThinking} 
@@ -57,8 +54,6 @@ export default function ChatContainer({ messages, isThinking, selectedModel, onS
         inputValue={inputValue}
         onTypingStatusChange={handleTypingStatusChange}
       />
-
-      {/* Input - Disabled when thinking OR when bot is typing */}
       <ChatInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} isDisabled={isThinking || isBotTyping} />
     </div>
   )

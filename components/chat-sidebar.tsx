@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MessageSquare, Trash2 } from "lucide-react"
+import { MessageSquare, Trash2, X } from "lucide-react"
 import ModelSelector from "./model-selector"
 import ModeSwitcher from "./mode-switcher"
 import { MODELS } from "@/lib/models"
@@ -18,6 +18,8 @@ interface ChatSidebarProps {
   refreshTrigger?: number
   mode: "standard" | "reasoning" | "navigation"
   onModeChange: (mode: "standard" | "reasoning" | "navigation") => void
+  isOpen: boolean
+  onClose: () => void
 }
 
 export default function ChatSidebar({
@@ -28,7 +30,9 @@ export default function ChatSidebar({
   onNewChat,
   refreshTrigger,
   mode,
-  onModeChange
+  onModeChange,
+  isOpen,
+  onClose
 }: ChatSidebarProps) {
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -56,8 +60,6 @@ export default function ChatSidebar({
     e.stopPropagation()
     setDeletingId(conversationId)
     setDeleteProgress(0)
-
-    // Simulate progress
     const progressInterval = setInterval(() => {
       setDeleteProgress(prev => {
         if (prev >= 90) {
@@ -85,17 +87,32 @@ export default function ChatSidebar({
   }
 
   return (
-    <div className="w-80 bg-black border-r border-sidebar-border flex flex-col h-screen">
-      {/* Header */}
-      <div className="p-6 border-b border-sidebar-border">
+    <>
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      <div className={`
+        fixed lg:relative
+        w-80 bg-black border-r border-sidebar-border flex flex-col h-screen
+        z-50 transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-6 border-b border-sidebar-border">
+          <button
+            onClick={onClose}
+            className="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white transition"
+          >
+            <X size={24} />
+          </button>
         <div className="flex items-center gap-2 mb-4">
-          <img src="/logo-icon.svg" alt="Gateway" className="w-9 h-9" />
+          <img src="/logo-icon.svg" alt="Solaris" className="w-9 h-9" />
           <span className="text-lg bg-gradient-to-r from-[#86ee02] via-[#a8ff3a] via-[#c4ff6e] via-[#d4ff8f] to-[#e8ffb8] bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-            <span className="font-bold">Gateway</span><span className="font-light">.dev</span>
+            <span className="font-bold">Solaris</span><span className="font-light">.dev</span>
           </span>
         </div>
-
-        {/* New Chat Button */}
         <button
           onClick={onNewChat}
           className="w-full bg-[#86ee02] hover:bg-[#86ee02]/90 text-black font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm cursor-pointer"
@@ -103,14 +120,10 @@ export default function ChatSidebar({
           <MessageSquare size={18} />
           New Chat
         </button>
-
-        {/* Mode Switcher */}
         <div className="mt-4">
           <ModeSwitcher mode={mode} onModeChange={onModeChange} />
         </div>
       </div>
-
-      {/* Recent Chats */}
       <div className="flex-1 overflow-y-auto px-6 py-8 scrollbar-hide">
         <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-4 px-4">RECENT</h3>
         <div className="space-y-1">
@@ -153,7 +166,6 @@ export default function ChatSidebar({
         </div>
       </div>
 
-      {/* Model Selector and Logout at Bottom */}
       <div className="p-6 border-t border-sidebar-border space-y-3">
         <ModelSelector
           currentModel={currentModel}
@@ -173,6 +185,7 @@ export default function ChatSidebar({
           Logout
         </button>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

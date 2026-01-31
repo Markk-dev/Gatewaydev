@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Menu } from "lucide-react"
 import ChatLayout from "@/components/chat-layout"
 import ChatContainer from "@/components/chat-container"
 import ChatSidebar from "@/components/chat-sidebar"
@@ -47,6 +48,7 @@ export default function ChatPage() {
   const [refreshSidebar, setRefreshSidebar] = useState(0)
   const [mode, setMode] = useState<"standard" | "reasoning" | "navigation">("standard")
   const [preloadedMessageIds, setPreloadedMessageIds] = useState<Set<string>>(new Set())
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
  
@@ -234,6 +236,7 @@ export default function ChatPage() {
 
   const handleConversationSelect = async (conversationId: string) => {
     setCurrentConversationId(conversationId)
+    setIsSidebarOpen(false) // Close sidebar on mobile after selection
     const result = await getConversationMessages(conversationId)
     
     if (result.success && result.messages) {
@@ -284,6 +287,7 @@ export default function ChatPage() {
     setMessages([])
     setConversationHistory([])
     setPreloadedMessageIds(new Set())
+    setIsSidebarOpen(false) // Close sidebar on mobile after new chat
   }
 
   if (isLoading) {
@@ -296,6 +300,14 @@ export default function ChatPage() {
 
   return (
     <ChatLayout>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-30 bg-[#86ee02] text-black p-2 rounded-lg shadow-lg hover:bg-[#86ee02]/90 transition"
+      >
+        <Menu size={24} />
+      </button>
+
       <ChatSidebar 
         selectedModel={selectedModel} 
         onModelChange={setSelectedModel}
@@ -305,6 +317,8 @@ export default function ChatPage() {
         refreshTrigger={refreshSidebar}
         mode={mode}
         onModeChange={setMode}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
       <ChatContainer
         messages={messages}

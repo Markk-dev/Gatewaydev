@@ -5,7 +5,6 @@ import { InteractiveGridPattern } from "./ui/interactive-grid-pattern"
 import { cn } from "@/lib/utils"
 import { ProgressiveTyping } from "./ui/progressive-typing"
 import { FileText, Image as ImageIcon } from "lucide-react"
-import { TextAnimate } from "./ui/text-animate"
 import { Highlighter } from "./ui/highlighter"
 import ReasoningBlock from "./reasoning-block"
 

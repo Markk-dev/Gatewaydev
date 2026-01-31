@@ -30,9 +30,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
   }
 
   const canSend = () => {
-    // Can't send if file is still extracting
     if (uploadedFile?.isExtracting) return false
-    // Can send if there's text or extracted text
     return value.trim() || uploadedFile?.extractedText
   }
 
@@ -61,15 +59,11 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    // Check if it's a supported format
     const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
     if (!supportedTypes.includes(file.type)) {
       alert('Please select a JPEG, PNG, or PDF file')
       return
     }
-
-    // Set file with extracting state
     setUploadedFile({
       file,
       extractedText: null,
@@ -97,7 +91,6 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
       alert(`OCR failed: ${error.message}`)
       setUploadedFile(null)
     } finally {
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -120,7 +113,6 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
   const getFileName = () => {
     if (!uploadedFile) return ''
     const name = uploadedFile.file.name
-    // Truncate filename if too long (max 15 chars before extension)
     const maxLength = 15
     const parts = name.split('.')
     const ext = parts.pop() || ''
@@ -213,7 +205,7 @@ export default function ChatInput({ value, onChange, onSubmit, isDisabled }: Cha
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          Gateway may produce inaccurate information about people, places or fact. Check{" "}
+          Solaris may produce inaccurate information about people, places or fact. Check{" "}
           <a href="#" className="underline hover:no-underline">
             Privacy Notice
           </a>

@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface ReasoningBlockProps {
   reasoningText: string
-  reasoningTime: number // in seconds
+  reasoningTime: number
   isComplete: boolean
   onReasoningComplete?: () => void
 }
@@ -14,8 +14,6 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
   const [isExpanded, setIsExpanded] = useState(true)
   const [displayedText, setDisplayedText] = useState("")
   const [liveTimer, setLiveTimer] = useState(0)
-
-  // Live timer that counts up while thinking
   useEffect(() => {
     if (isComplete) return
 
@@ -23,12 +21,10 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000)
       setLiveTimer(elapsed)
-    }, 100) // Update every 100ms for smooth counting
+    }, 100)
 
     return () => clearInterval(interval)
   }, [isComplete])
-
-  // Stream the reasoning text character by character
   useEffect(() => {
     if (!reasoningText) return
 
@@ -42,12 +38,10 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
       } else {
         clearInterval(interval)
       }
-    }, 5) // Speed of typing (faster: 5ms per character)
+    }, 5) 
 
     return () => clearInterval(interval)
   }, [reasoningText])
-
-  // Auto-collapse when reasoning is complete and notify parent (only once)
   const hasCollapsedRef = useRef(false)
 
   useEffect(() => {
@@ -58,14 +52,13 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
         if (onReasoningComplete) {
           onReasoningComplete()
         }
-      }, 300) // Wait before collapsing and showing answer (faster: 300ms)
+      }, 300)
       return () => clearTimeout(timer)
     }
   }, [isComplete, displayedText, reasoningText, onReasoningComplete])
 
   return (
     <div className="mt-[-5px]">
-      {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center gap-2 text-gray-400 text-xs hover:text-gray-300 transition mb-1"
@@ -85,8 +78,6 @@ export default function ReasoningBlock({ reasoningText, reasoningTime, isComplet
           </>
         )}
       </button>
-
-      {/* Reasoning Content - Streams in real-time */}
       {isExpanded && (reasoningText || displayedText) && (
         <div className="mt-1">
           <div className="text-xs leading-relaxed whitespace-pre-wrap italic opacity-50">
